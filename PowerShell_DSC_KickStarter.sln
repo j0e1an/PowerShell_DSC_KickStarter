@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShell_DSC_KickStarter", "PowerShell_DSC_KickStarter\PowerShell_DSC_KickStarter.csproj", "{76396780-55DF-43A4-93CD-2683F58F4625}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76396780-55DF-43A4-93CD-2683F58F4625}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76396780-55DF-43A4-93CD-2683F58F4625}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76396780-55DF-43A4-93CD-2683F58F4625}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76396780-55DF-43A4-93CD-2683F58F4625}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F2026C4E-9D5B-4A48-A86F-4EE15767DC61}
+	EndGlobalSection
+EndGlobal
