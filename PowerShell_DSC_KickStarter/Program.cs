@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Management.Automation;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Management.Automation;//If you can't use this, you should download the Windows SDK and add the reference of System.Management.Automation from C:\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0
+using System.Text.RegularExpressions;
 
 
 namespace PowerShell_DSC_KickStarter
@@ -21,13 +18,14 @@ namespace PowerShell_DSC_KickStarter
 
         static void Main() //Greeting and display support info
         {
-            Console.WriteLine("Welcome, this program is intended for helping system administrators to create DSC file which could be used to manage their web servers with the desired configuration." +
+            Console.WriteLine("Welcome, this program is intended for helping system administrators to create mof files which could be used to manage web servers with the desired configuration." +
                 " If you need to know how to use this tool please type 'help'.");
+            Console.WriteLine("******************************************************************************************************************'.");
             ReadServerlist();
         }
         static void ReadServerlist()//get user input for a list of servers first.
         {
-        Read_file_start_line:
+        Read_file_start_line://this section will read user input for the server file and validate the server names.
             Console.WriteLine("Please input a path for the server list text file.");
             string userinput = Console.ReadLine();
             if (userinput == "help")
@@ -56,35 +54,35 @@ namespace PowerShell_DSC_KickStarter
                     Console.WriteLine("IO error, please try again.");
                     goto Read_file_start_line;
                 }
-                catch (UnauthorizedAccessException)
+                catch (UnauthorizedAccessException) // No file permission error.
                 {
                     Console.WriteLine("File permission denied, please verify the permission and maybe start this program with administrative rights would help.");
                     goto Read_file_start_line;
                 }
-                catch (ArgumentException)
+                catch (ArgumentException) // When you enter nothing.
                 {
                     Console.WriteLine("Invalid input, please supply a file path.");
                     goto Read_file_start_line;
                 }
-                catch (Exception e)
+                catch (Exception)// Last resort, catch'em all!
                 {
                     Console.WriteLine("An unhandled exception has occured, please see deatails:");
-                    throw e;
+                    throw;
                 }
-                ServerListValidating(server_list_array);
+                ServerListValidating(server_list_array);// Call the ServerListValidating method to validate the server names.
             }
 
         }
-        static void ServerListValidating(Array server_list)
+        static void ServerListValidating(Array server_list)// Validating server names.
         {
             Console.WriteLine("Checking the names of server. One moment...");
-            string pattern_ipv4 = @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
-            string pattern_FQDN_and_DNS_name = @"^([\w*\d*-.])*$";
+            string pattern_ipv4 = @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"; //pattern used for IPv4 addresses.
+            string pattern_FQDN_and_DNS_name = @"^([\w*\d*-.])*$";//pattern used for domain names or computer names.
             List<string> bad_server_names = new List<string>();
             int bad_names = 0;
             Regex ipv4_validate = new Regex(pattern_ipv4);
             Regex DNS_validate = new Regex(pattern_FQDN_and_DNS_name);
-            foreach (string server_name in server_list)
+            foreach (string server_name in server_list)//loop through the list of the server names.
             {
                 if (!DNS_validate.IsMatch(server_name) & !ipv4_validate.IsMatch(server_name))
                 {
@@ -101,13 +99,12 @@ namespace PowerShell_DSC_KickStarter
             else
             {
                 Console.WriteLine("Looks good, now we are in business.");
-                ServerOptionRead();
+                ServerOptionRead(); //Go to the next method to read user prompt for server options.
             }
-            System.Console.ReadKey();
         }
-        static void ServerOptionRead()
+        static void ServerOptionRead()//Read user input for server options.
         {
-        Ensure:
+        Ensure://Get ensure status of the configuration.
             Console.WriteLine("Do you want the web-server role present on these servers? Default is yes.(YES/NO)");
             string ensureinput = Console.ReadLine();
             if (string.Equals(ensureinput, "yes", StringComparison.OrdinalIgnoreCase) ^ ensureinput == "")
@@ -123,12 +120,12 @@ namespace PowerShell_DSC_KickStarter
                 Console.WriteLine("Invalid input, please try agin.");
                 goto Ensure;
             }
-        SourcePath:
-            Console.WriteLine("Where is the source path for the web files? Default is C:\\webconfig\\index.html");
+        SourcePath://The source path for configuration file that will move over to the deployed servers. 
+            Console.WriteLine("Where is the source path for the web files? Default is \\\\webconfig\\index.html");
             string sourcepathinput = Console.ReadLine();
             if (sourcepathinput == "")
             {
-                sourcepath = "C:\\webconfig\\index.html";
+                sourcepath = "\\\\webconfig\\index.html";
             }
             else if (Path.IsPathRooted(sourcepathinput))
             {
@@ -139,7 +136,7 @@ namespace PowerShell_DSC_KickStarter
                 Console.WriteLine("Invalid input, please try agin.");
                 goto SourcePath;
             }
-        DestPath:
+        DestPath://The destination path for deployed server's web application location.
             Console.WriteLine("Where is the destination path for the web files on the deployed server? Default is C:\\www\\index.html");
             string destpathinput = Console.ReadLine();
             if (destpathinput == "")
@@ -155,14 +152,14 @@ namespace PowerShell_DSC_KickStarter
                 Console.WriteLine("Invalid input, please try agin.");
                 goto DestPath;
             }
-        OutputPath:
-            Console.WriteLine("Where do you want to keep your .mof files? Default is your desktop.");
+        OutputPath://The output file for the generated mod file on local machine.
+            Console.WriteLine("Where do you want to keep your .mof files? Default is in the DSC folder of your desktop.");
             string outputpathinput = Console.ReadLine();
             if (outputpathinput == "")
             {
-                outputpath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                outputpath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)+"\\DSC";
             }
-            else if (Path.IsPathRooted(outputpathinput))
+            else if (Path.IsPathRooted(outputpathinput))//check if the supplied path is rooted or in another word if the path is valid. 
             {
                 outputpath = outputpathinput;
             }
@@ -172,27 +169,27 @@ namespace PowerShell_DSC_KickStarter
                 goto OutputPath;
             }
             var new_DSC_instance = new powershell();
-            new_DSC_instance.Main(server_list_array, webrole_present, sourcepath, destpath, outputpath);
+            new_DSC_instance.Main(server_list_array, webrole_present, sourcepath, destpath, outputpath);//Call the new class which will do the mof magic.
         }
 
     }
-    class powershell
+    class powershell//Class for making the mof files.
     {
-        public void Main(string[] server_list, string webrole_present, string sourcepath, string destpath, string outputpath)
+        public void Main(string[] server_list, string webrole_present, string sourcepath, string destpath, string outputpath)//A method takes 5 parameters for process. 
         {
-            PowerShell create_mof = PowerShell.Create();
-            create_mof.AddCommand("Set-ExecutionPolicy")
+            PowerShell create_mof = PowerShell.Create();//Create a powershell session
+            create_mof.AddCommand("Set-ExecutionPolicy")//make sure the localmachine can execute the following powershell code without problem. This will only work for the current session.
                 .AddParameter("ExecutionPolicy", "Unrestricted")
                 .AddParameter("scope", "Process")
                 .AddParameter("Force")
                 .Invoke();
-            foreach (string server_name in server_list)
+            foreach (string server_name in server_list)//loop through each server and add the customized server options to DSC
             {
-                Console.WriteLine("Making .mof file for server: "+server_name);
-                create_mof.AddScript(""+
+                Console.WriteLine("Making .mof file for server: " + server_name);
+                create_mof.AddScript("" + //This section does the heavylifting of making the powershell code and execute it at the end. 
                     "Configuration WebServerDSC {\n" +
                         "Import-DscResource -ModuleName PsDesiredStateConfiguration\n" +
-                        "Node '"+server_name+"'{\n" +
+                        "Node '" + server_name + "'{\n" +
                             "WindowsFeature WebServer {\n" +
                                 "Ensure =  '" + webrole_present + "'\n" +
                                 "Name = 'Web-Server'}\n" +
@@ -201,9 +198,9 @@ namespace PowerShell_DSC_KickStarter
                                 "SourcePath = '" + sourcepath + "'\n" +
                                 "DestinationPath = '" + destpath + "'\n" +
                         "}}}");
-                Collection <PSObject> PSOutput = create_mof.Invoke();
+                Collection<PSObject> PSOutput = create_mof.Invoke();
                 Console.WriteLine("Applying magic and gliters.....");
-                create_mof.AddCommand("WebServerDSC")
+                create_mof.AddCommand("WebServerDSC")//This is where the configuration is executed and mof file will be generated to the output path supplied. 
                     .AddParameter("OutputPath", outputpath)
                     .Invoke();
                 if (create_mof.Streams.Error.Count == 0)
@@ -216,5 +213,5 @@ namespace PowerShell_DSC_KickStarter
                 Console.WriteLine("All Done! Press any key to exit.");
             }
         }
-    } 
+    }
 }
